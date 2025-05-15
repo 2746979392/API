@@ -1,0 +1,44 @@
+using XINJE;
+using NUnit.Framework;
+
+namespace API单元测试
+{
+    [TestFixture]
+    public class Tests
+    {
+        private static bool 所有建立通信成功 = true;
+         [SetUp]
+        public void Setup()
+        {
+        }
+
+        [Test, Order(1)]
+        [TestCase((ushort)0, (ushort)20011)]
+        [TestCase((ushort)1, (ushort)0)]
+        [TestCase((ushort)2, (ushort)20000)]
+        public void 建立通信(ushort type, ushort expectedErrorCode)
+        {
+            ushort errorCode = XINJEMC.mc_connect_open(connectNo: 0, type, pconnectstring: "192.168.6.6", dwBaudRate: 1000);
+            try
+            {
+                Assert.That(errorCode, Is.EqualTo(expectedErrorCode));
+            }
+            catch (AssertionException)
+            {
+                所有建立通信成功 = false; // 标记失败
+                throw; // 重新抛出异常以标记测试结果为失败
+            }
+        }
+
+        [Test, Order(2)]
+        public void 使能()
+        {
+            Assume.That(所有建立通信成功, Is.True, "因建立通信失败，跳过使能测试");
+            ushort errorCode = XINJEMC.mc_axis_enable(connectNo: 0, axisId: 0);
+            ushort errorCode1 = XINJEMC.mc_axis_enable(connectNo: 0, axisId: 1);
+            Assert.That(errorCode, Is.EqualTo(0));
+            Assert.That(errorCode1, Is.EqualTo(0));
+        }
+
+    }
+}
